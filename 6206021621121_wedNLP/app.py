@@ -15,6 +15,8 @@ import os
 import spacy
 from spacy import displacy
 from spacy.tokens import Span
+from transformers import AutoTokenizer , AutoModelForSequenceClassification
+import pandas as pd
 import nltk
 nltk.download('punkt')
 nltk.download('wordnet')
@@ -31,7 +33,7 @@ label = []
 
 text = []
 
-app.config["UPLOAD_PATH"] = "C:\\Users\\Meiji\\Downloads\\6206021621121_wedNLP-20220830T090746Z-001\\6206021621121_wedNLP\\text"
+app.config["UPLOAD_PATH"] = "C:\\Users\\Meiji\\Downloads\\6206021621121_wedNLP-20221009T123232Z-001\\6206021621121_wedNLP\\text"
 #home(request.files.getlist('Docfile'))
 
 
@@ -56,7 +58,7 @@ def seve():
     for i in range(5):    
         #if i != 0:
         #f = open(f"{i}.txt", "r")
-        f = open(f"./text/{i+1}.txt", "r")
+        f = open(f".\\text\\{i+1}.txt", "r")
         #Read TXT file   
         article = f.read()
         # Tokenize the article: tokens
@@ -75,14 +77,10 @@ def seve():
         articles.append(lemmatized)
         #print(articles[0])
         #bow = Counter(lemmatized)
-    return (articles,article)
-
-@app.route('/',methods=['POST'])
-def bow():
-    #BOW
-    #x = (bow.most_common(5))
-    #article1.append(x)
-
+    
+        #BOW
+        #x = (bow.most_common(5))
+        #article1.append(x)
     dictionary = Dictionary(articles)
     corpus = [dictionary.doc2bow(a) for a in articles]
     total_word_count = defaultdict(int)
@@ -91,34 +89,27 @@ def bow():
     sorted_word_count = sorted(total_word_count.items(), key=lambda w: w[1],reverse=True)
     for word_id, word_count in sorted_word_count[:5]:
         article1.append(f"{dictionary.get(word_id)} {word_count}")
-    return render_template('index.html',article1=article1,article2=article2,label=Markup(label))
-
-@app.route('/',methods=['POST'])
-def tf(): 
-    #tf
-    #if i != 0:
-    #print (i)
-    #n = int(i)
-    #doc = corpus[i]
-    dictionary = Dictionary(articles)
-    corpus = [dictionary.doc2bow(a) for a in articles]
-    tfidf_weights = defaultdict(int)
-    for term_id, weight in itertools.chain.from_iterable(corpus):
-        tfidf_weights[term_id] += weight
+        
+    
+        #tf
+        #if i != 0:
+        #print (i)
+        #n = int(i)
+        #doc = corpus[i]
+    doc = corpus[0]   
+    tfidf = TfidfModel(corpus)
+    tfidf_weights = tfidf[doc]
     sorted_tfidf_weights = sorted(tfidf_weights, key=lambda w: w[1],reverse=True)
     for term_id, weight in sorted_tfidf_weights[:5]:
-        article2.append(f"{dictionary.get(term_id)} {weight}")
-    #top_w.append(article1,article2)
-    return render_template('index.html',article1=article1,article2=article2,label=Markup(label))
-
-def ner():  
-    #ner spacy
-    dictionary = Dictionary(articles)
-    corpus = [dictionary.doc2bow(a) for a in articles]
+        y=(dictionary.get(term_id),weight)
+        article2.append(y)
+        #top_w.append(article1,article2)
+      
+        #ner spacy
     nlp = spacy.load('en_core_web_sm')
-    doc = nlp(corpus)
+    doc = nlp(article)
     label=displacy.render(doc, style="ent")
-    return render_template('index.html',article1=article1,article2=article2,label=Markup(label))
+    return render_template('index.html',article1=article1,article2=article2,label=Markup(label),dictionary=dictionary)
 
 
 @app.route('/word',methods=['POST'])
@@ -131,11 +122,45 @@ def search():
     computer_id = (dictionary.token2id.get(word))
     print(computer_id)
     if computer_id is not None :
-        meiji = 'มีในเอกสาร'
+        havet = 'มีในเอกสาร'
         #print(computer_id)
     else:
-        meiji = 'ไม่มีในเอกสาร'
-    return render_template('index.html',meiji=meiji,article1=article1,article2=article2)
+        havet = 'ไม่มีในเอกสาร'
+    return render_template('index.html',havet=havet,article1=article1,article2=article2,label=Markup(label))
+
+
+model_path = "meiji"
+model = AutoModelForSequenceClassification.from_pretrained(model_path)
+tokenizer = AutoTokenizer.from_pretrained(model_path)
+max_length = 512
+def get_prediction(convert_to_label=False):
+    news = request.form.get('news')
+    # prepare our text into tokenized sequence
+    inputs = tokenizer(news, padding=True, truncation=True, max_length= max_length, return_tensors="pt")
+    # perform inference to our model
+    outputs = model(**inputs)
+    # get output probabilities by doing softmax
+    probs = outputs[0].softmax(1)
+    # executing argmax function to get the candidate label
+    d = {
+        0: "reliable",
+        1: "fake"
+    }
+    if convert_to_label:
+        return d[int(probs.argmax())]
+    else:
+        return int(probs.argmax())
+
+
+
+@app.route('/news',methods=['POST'])
+def Fakenews():
+    news = request.form.get('news')
+    new_df = news.replace
+    print(news)
+    new_Label = new_df.apply(get_prediction)
+    print(new_Label)
+    return render_template('index.html',new_Label=new_Label)
 
 if __name__ == "__main__":
     #app.run(host="0.0.0.0",port=80)
