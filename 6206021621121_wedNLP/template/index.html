@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>NLP</title>
+        <!-- Font Awesome -->
+            <link
+            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+            rel="stylesheet"
+            />
+            <!-- Google Fonts -->
+            <link
+            href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap"
+            rel="stylesheet"
+            />
+            <!-- MDB -->
+            <link
+            href="https://cdnjs.cloudflare.com/ajax/libs/mdb-ui-kit/4.4.0/mdb.min.css"
+            rel="stylesheet"
+            />
+            <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+            <link rel="stylesheet" href="/lib/w3.css">
+            <style>
+                .city {display:none;}
+                </style>
+    </head>
+
+    <body>
+        <div class="login">
+        <h1 >NLP WEB</h1>     
+        <form action="/", method="post" enctype="multipart/form-data">
+            <div class="rowA10">
+                <input class="INputa" type="file" name="textfile" multiple>
+            </div>
+            <div class="rowA11">
+                <input class="INputb" type="submit" value="submit">
+            </div>
+        </form>
+
+        <form action="/word", method="post" enctype="multipart/form-data">
+                <div class="rowA10">
+                  <input class="INputa" type="text" id="sinput" name="ssearch" placeholder="search" required="required" />
+                </div>
+                <div class="rowA11">
+                  <button class="INputb" type="submit" ><i class="fas fa-search"></i></button>
+                </div>
+                <div class="rowA12">
+                    <h2>{{havet}}</h2>
+            </div>
+        </form>
+
+        <div class="rowA11">
+            <a href="#" onclick="openCity(event, 'London');">
+                    <button class="INputb" type="submit">TOP 5</button>
+              <div class="w3-third tablink w3-bottombar w3-hover-light-grey w3-padding"></div>
+            </a>
+        </div>
+        <div class="rowA11">
+            <a href="#" onclick="openCity(event, 'Paris');">
+                <button class="INputb" type="submit">NER</button>
+              <div class="w3-third tablink w3-bottombar w3-hover-light-grey w3-padding"></div>
+            </a>
+            
+        </div>
+        <div class="rowA11">
+            <a href="#" onclick="openCity(event, 'Fake News');">
+                <button class="INputb" type="submit">Fake News</button>
+              <div class="w3-third tablink w3-bottombar w3-hover-light-grey w3-padding"></div>
+            </a>
+        </div>
+        <div class="rowA11">
+            <a href="#" onclick="openCity(event, 'Sentiment');">
+                <button class="INputb" type="submit">Sentiment</button>
+              <div class="w3-third tablink w3-bottombar w3-hover-light-grey w3-padding"></div>
+            </a>
+        </div>
+      
+          
+        <div id="London" class="w3-container city">
+            <form action="/", method="post">
+                <div class="rowA12">
+                    <div class="rowA50">
+                        <h2>Bow</h2>
+                        <div class="rowA53">
+                            <h2>{{article1}}</h2>
+                        </div>
+                    </div> 
+                    
+                    <div class="rowA50">
+                        <h2>TF-IDF</h2>
+                        <div class="rowA51">
+                            <div class="bg12">
+                                <div class="rowA53"><h2>{{article2}}</h2> </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+          
+          <div id="Paris" class="w3-container city">
+            <form action="/", method="post">
+                <div class="rowA12">
+                    <div class="rowA53">
+                        <h2>{{label}}</h2>
+                    </div>
+                </div>
+            </form>       
+          </div>
+
+          <div id="Fake News" class="w3-container city">
+            <form action="/news", method="post">
+                <div>
+                    <div >
+                        <form action="/news", method="post" enctype="multipart/form-data">
+                            <div class="rowA12"><h1>InPut Text News</h1></div>
+                            <div class="rowA10">
+                                
+                              <input class="INputa" type="text" id="sinput" name="news" placeholder="Fake News" required="required" />
+                            </div>
+                            <div class="rowA11">
+                              <button class="INputb" type="submit" ><i class="fas fa-search"> Search</i></button>
+                            </div>
+
+                            <div class="rowA12">
+                                <!--<h2>meiji</h2>--->
+                                <h2>{{msg1}}</h2>
+                        </div>
+                            
+                    </form>
+                    </div>
+                </div>
+            </form>       
+          </div>
+          
+          <div id="Sentiment" class="w3-container city">
+            <form action="/sentiment", method="post">
+                <div>
+                    <div >
+                        <form action="/sentiment", method="post" enctype="multipart/form-data">
+                            <div class="rowA12"><h1>InPut Sentiment</h1></div>
+                            <div class="rowA10">
+                                
+                              <input class="INputa" type="text" id="sinput" name="Sentiment" placeholder="Sentiment" required="required" />
+                            </div>
+                            <div class="rowA11">
+                              <button class="INputb" type="submit" ><i class="fas fa-search"> Search</i></button>
+                            </div>
+                            <div class="rowA12">
+                                <h2>{{'Polarity_score : ', polarity,'Subjectivity : ',subjectivity}}</h2>
+                        </div>
+                    </form>
+                    </div>
+                </div>
+            </form>       
+          </div>
+          
+          <script>
+          function openCity(evt, cityName) {
+            var i, x, tablinks;
+            x = document.getElementsByClassName("city");
+            for (i = 0; i < x.length; i++) {
+               x[i].style.display = "none";
+            }
+            tablinks = document.getElementsByClassName("tablink");
+            for (i = 0; i < x.length; i++) {
+               tablinks[i].className = tablinks[i].className.replace(" w3-border-red", "");
+            }
+            document.getElementById(cityName).style.display = "block";
+            evt.currentTarget.firstElementChild.className += " w3-border-red";
+          }
+          </script>
+        </div>
+    </body>
+</html>
